@@ -23,6 +23,7 @@ mongoose.connection.on("error", (error) => {
 
 // Routes
 const indexRoute = require("./routes/index");
+const authRoute = require("./routes/auth");
 const userRoute = require("./routes/users");
 
 // middleware
@@ -32,6 +33,7 @@ app.use(cookieParser());
 app.use(express.static('public'));
 // use routes
 app.use("/", indexRoute);
+app.use("/auth", authRoute);
 app.use("/users", userRoute);
 
 
