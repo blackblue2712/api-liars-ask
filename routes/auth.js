@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const {
-    postSignup
+    postSignup,
+    postSignin
 } = require("../controllers/auth");
 
 const {
@@ -15,5 +16,7 @@ router.post("/signup", [
         check('password').matches(/\d/).withMessage("Password must have at least 1 number")
     ]
 , handlePassword, postSignup);
+
+router.post("/signin", postSignin);
 
 module.exports = router;
