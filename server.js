@@ -11,10 +11,10 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+require('dotenv').config()
 
 // database
-console.log(process.env.DB_URI)
-mongoose.connect("mongodb://localhost:27017/liars-ask", {useUnifiedTopology: true, useNewUrlParser: true}, () => {
+mongoose.connect(process.env.DB_URI, {useUnifiedTopology: true, useNewUrlParser: true}, () => {
     console.log("Database connecting...");
 });
 mongoose.connection.on("error", (error) => {
@@ -23,10 +23,15 @@ mongoose.connection.on("error", (error) => {
 
 
 
+
 // middleware
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(express.static('public'));
+
+
+
 
 // routes
 
@@ -35,6 +40,18 @@ app.use(cookieParser());
 app.get("/", (req, res) => {
     res.send("Hello world");
 })
+
+
+
+app.use( function(error, req, res, next) {
+    // handling error
+})
+
+// 404 handling - put it in very bottom because express will exucute all middlewares and functions, so if 404 this middleware will be run
+app.use(function (req, res, next) {
+    res.status(404).send({error: "404 not found!"});
+});
+
 
 
 // Listen port
