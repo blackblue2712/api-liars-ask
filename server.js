@@ -21,25 +21,18 @@ mongoose.connection.on("error", (error) => {
     console.log(`Connect occur error: ${error}`);
 });
 
-
-
+// Routes
+const indexRoute = require("./routes/index");
+const userRoute = require("./routes/users");
 
 // middleware
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static('public'));
-
-
-
-
-// routes
-
-
-// test
-app.get("/", (req, res) => {
-    res.send("Hello world");
-})
+// use routes
+app.use("/", indexRoute);
+app.use("/users", userRoute);
 
 
 
