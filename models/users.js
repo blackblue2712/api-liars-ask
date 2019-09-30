@@ -22,7 +22,11 @@ const userSchema = new Schema ({
     },
     activeLink: String,
     bio: String,
-    quotes: String
+    quotes: String,
+    isGuildMakeAQuestion: {
+        type: Boolean,
+        default: false
+    }
 });
 
 userSchema.virtual("password") // password is the name of the input pass to server

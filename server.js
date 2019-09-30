@@ -8,6 +8,7 @@ const PORT = process.env.PORT || 8080;
 
 //
 const mongoose = require("mongoose");
+const cors = require("cors");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
@@ -27,6 +28,7 @@ const authRoute = require("./routes/auth");
 const userRoute = require("./routes/users");
 
 // middleware
+app.use(cors());
 app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -37,7 +39,6 @@ app.use("/auth", authRoute);
 app.use("/users", userRoute);
 
 
-
 app.use( function(error, req, res, next) {
     // handling error
 })
@@ -46,8 +47,6 @@ app.use( function(error, req, res, next) {
 app.use(function (req, res, next) {
     res.status(404).send({error: "404 not found!"});
 });
-
-
 
 // Listen port
 app.listen(PORT, () => {
