@@ -26,6 +26,7 @@ mongoose.connection.on("error", (error) => {
 const indexRoute = require("./routes/index");
 const authRoute = require("./routes/auth");
 const userRoute = require("./routes/users");
+const tagRoute = require("./routes/tags");
 
 // middleware
 app.use(cors());
@@ -37,6 +38,7 @@ app.use(express.static('public'));
 app.use("/", indexRoute);
 app.use("/auth", authRoute);
 app.use("/users", userRoute);
+app.use("/tags", tagRoute);
 
 
 app.use( function(error, req, res, next) {
