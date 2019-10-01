@@ -1,4 +1,11 @@
 const User = require("../models/users");
+const formidable = require("formidable");
+const cloudinary = require('cloudinary');
+cloudinary.config({ 
+    cloud_name: process.env.CLOUD_NAME, 
+    api_key: process.env.API_KEY, 
+    api_secret: process.env.API_SECRET 
+});
 
 module.exports.getUsers = (req, res) => {
     console.log("getUsers controller called");
@@ -40,17 +47,41 @@ module.exports.updateStoryUser = (req, res) => {
 }
 
 module.exports.updateInfoUser = (req, res) => {
-    console.log(req.payload)
     let user = req.userPayload;
-    let { ffullname, currentPassword } = req.body;
-    
-    if(user.authenticate(currentPassword)) {
-        user.fullname = ffullname;
-        user.save( (err, result) => {
-            if(err) return res.status(400).json( {message: "Error occur when update story user, please try again"} );
-            return res.status(200).json( {message: "Info updated"} );
-        });
-    } else {
-        res.status(400).json( {message: "Password do not match"} );
-    }
+    let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
+
+    form.parse(req, function(err, fields, files) {
+        const { id, fullname, currentPassword } = fields;
+        console.log(files.photo);
+        if(user.authenticate(currentPassword)) {
+            user.fullname = fullname;
+            if(files.photo) {
+                
+                if(user.photo) {
+                    const fileName = user.photo.split("/")[user.photo.split("/").length - 1].split(".")[0];
+                    cloudinary.v2.uploader.destroy(fileName);
+                }
+                cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
+                    user.photo = result.secure_url;
+                    }).then( () => {
+                        user.save( (err, result) => {
+                            if(err) {
+                                return res.status(400).json( {message: "Error occur. Please try again"} )
+                            }
+                            return res.status(200).json( {message: `Info updated!`} );
+                        })
+                    })
+            } else {
+                user.save( (err, result) => {
+                    if(err) {
+                        return res.status(400).json( {message: "Error occur. Please try again"} )
+                    }
+                    return res.status(200).json( {message: `Info updated!`} );
+                })
+            }
+        } else {
+            res.status(400).json( {message: "Password do not match"} );
+        }
+    })
 }
