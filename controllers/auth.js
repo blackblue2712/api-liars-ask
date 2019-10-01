@@ -26,7 +26,10 @@ module.exports.postSignup = (req, res) => {
 
 module.exports.postSignin = (req, res) => {
     const { email, password } = req.body;
-    User.findOne( { email }, (err, user) => {
+
+    User.findOne( {email} )
+    .populate("roles", "permission")
+    .exec( (err, user) => {
         if(err || !user) {
             return res.status(400).json( {message: "User with that email is not exist"} )
         } else {
@@ -34,7 +37,7 @@ module.exports.postSignin = (req, res) => {
                 user.hashed_password = undefined;
                 user.salt = undefined;
 
-                const token = jwt.sign( {_id: user._id, roles: '775'}, process.env.JWT_SECRET );
+                const token = jwt.sign( {_id: user._id, roles: user.roles.permission}, process.env.JWT_SECRET );
                 res.cookie('token', token, {maxAge: 900000} );
                 const payload = {token, user}
                 return res.status(200).json( {message: "Signin successfully", payload} );
@@ -50,6 +53,11 @@ module.exports.requireSignin = expressJwt({
     userProperty: 'payload',
 })
 
+module.exports.isAdmin = (req, res, next) => {
+    console.log(req.payload)
+    req.payload && req.payload.roles === 7 ? next() : res.status(403).json( {message: 'Permisstion deny'} );
+}
+
 module.exports.getSignout = (req, res) => {
     res.clearCookie('token');
     res.status(200).json( {message: 'Signout success'} );   
@@ -57,7 +65,7 @@ module.exports.getSignout = (req, res) => {
 
 module.exports.postPrivileges = (req, res) => {
     let { name, permission, description } = req.body;
-    Privileges.findOne({name}, (err, pri) => {
+    Privileges.findOne({name, permission}, (err, pri) => {
         if(!pri) {
             let privileges = new Privileges({name, permission, description});
             privileges.save( (err, result) => {

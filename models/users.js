@@ -26,6 +26,11 @@ const userSchema = new Schema ({
     isGuildMakeAQuestion: {
         type: Boolean,
         default: false
+    },
+    roles: {
+        type: ObjectId,
+        ref: "privileges",
+        default: "5d91989c421445308b10631e"
     }
 });
 

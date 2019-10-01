@@ -8,7 +8,7 @@ module.exports.getSingleUser = (req, res) => {
     console.log("getUsers controller called");
 }
 
-module.exports.postInfoLoggedUser = (req, res) => {
+module.exports.getInfoLoggedUser = (req, res) => {
     console.log(req.payload)
     req.userPayload.hashed_password = undefined;
     req.userPayload.salt = undefined;

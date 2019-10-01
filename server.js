@@ -40,7 +40,10 @@ app.use("/users", userRoute);
 
 
 app.use( function(error, req, res, next) {
-    // handling error
+    if(error.name === "UnauthorizedError") {
+        return res.status(403).json( {message: error.message} );
+    }
+    next();
 })
 
 // 404 handling - put it in very bottom because express will exucute all middlewares and functions, so if 404 this middleware will be run

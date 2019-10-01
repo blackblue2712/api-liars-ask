@@ -6,7 +6,7 @@ const {
     requrestRelatedUserId,
     updateStoryUser,
     updateInfoUser,
-    postInfoLoggedUser
+    getInfoLoggedUser
 } = require("../controllers/users");
 
 const { requireSignin } = require("../controllers/auth");
@@ -15,7 +15,7 @@ router.get("/", (req, res) => {
     res.send( {message: "user controllers"} );
 });
 
-router.post("/:userId", requireSignin, postInfoLoggedUser);
+router.get("/:userId", requireSignin, getInfoLoggedUser);
 router.put("/story/:userId", updateStoryUser);
 router.put("/info/:userId", updateInfoUser);
 
