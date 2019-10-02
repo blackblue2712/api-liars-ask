@@ -15,6 +15,6 @@ module.exports.postAddTag = (req, res) => {
 module.exports.getTags = (req, res) => {
     Tag.find({}, (err, tags) => {
         if(err) return res.status(400).json( {message: "Error occur"} );
-        return res.status(400).json( {tags} );
+        return res.status(200).json( {tags} );
     })
 }

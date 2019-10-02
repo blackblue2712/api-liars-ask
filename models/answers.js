@@ -20,6 +20,10 @@ const answerSchema = new Schema ({
         type: ObjectId,
         ref: "users"
     },
+    created: {
+        type: Date,
+        default: Date.now
+    }
 
 })
 
