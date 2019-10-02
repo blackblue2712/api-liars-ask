@@ -55,3 +55,11 @@ module.exports.putEditAcm = (req, res) => {
         return res.status(200).json( {message: "Done", status: 200, payload: result} );
     });
 }
+
+module.exports.deleteEditAcm = (req, res) => {
+    let acm = req.acmInfo;
+    acm.remove( (err, result) => {
+        if(err) return res.status(400).json( {message: "Error occur (delete acm)"} );
+        return res.status(200).json( {message: "Done"} );
+    });
+}
