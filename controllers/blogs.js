@@ -38,3 +38,16 @@ module.exports.requestRelatedBlogId = async (req, res, next, id) => {
 module.exports.getSingleBlog = (req, res) => {
     return res.status(200).json(req.blogInfo);
 }
+
+module.exports.putEditBlog = (req, res) => {
+    let blog = req.blogInfo;
+    let { title, body, tagsnameArray } = req.body;
+    if(body) blog.body = body;
+    blog.title = title;
+    blog.anonymousTags = tagsnameArray;
+
+    blog.save( (err, result) => {
+        if(err) return res.status(400).json( {message: "Error occur (edit blog)"} )
+        return res.status(200).json( {message: "Done"} );
+    })
+}
