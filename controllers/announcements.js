@@ -30,8 +30,8 @@ module.exports.getAnnouncements = (req, res) => {
     });
 }
 
-module.exports.requestRelatedAcmId = (req, res, next, id) => {
-    Acm.findById(id, (err, acm) => {
+module.exports.requestRelatedAcmId = async (req, res, next, id) => {
+    await Acm.findById(id, (err, acm) => {
         if(err || !acm) return res.status(400).json( {message: "Error occur 123"} );
         req.acmInfo = acm;
         next();

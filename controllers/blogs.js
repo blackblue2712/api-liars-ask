@@ -14,9 +14,27 @@ module.exports.getBlogs = (req, res) => {
     Blog.find({})
         .limit(Number(req.query.limit))
         .sort( {created: -1} )
+        .select("_id title")
         .exec( (err, blogs) => {
             if(err) return res.status(400).json( {message: "Error occur (get blogs) " + err} );
             return res.status(200).json( blogs );
         });
 }
+module.exports.getAllBlogs = (req, res) => {
+    Blog.find({}, (err, blogs) => {
+        if(err) return res.status(400).json( {message: "Error occur (get all blogs) " + err} );
+        return res.status(200).json( blogs );
+    })
+}
 
+module.exports.requestRelatedBlogId = async (req, res, next, id) => {
+    await Blog.findById(id, (err, blog) => {
+        if(err) return res.status(400).json( {message: "Error occur (get single blog)"} );
+        req.blogInfo = blog;
+    });
+    next();
+}
+
+module.exports.getSingleBlog = (req, res) => {
+    return res.status(200).json(req.blogInfo);
+}
