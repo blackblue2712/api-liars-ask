@@ -28,6 +28,7 @@ const authRoute = require("./routes/auth");
 const userRoute = require("./routes/users");
 const tagRoute = require("./routes/tags");
 const acmRoute = require("./routes/announcements");
+const blogRoute = require("./routes/blogs");
 
 // middleware
 app.use(cors());
@@ -41,6 +42,7 @@ app.use("/auth", authRoute);
 app.use("/users", userRoute);
 app.use("/tags", tagRoute);
 app.use("/announcements", acmRoute);
+app.use("/blogs", blogRoute);
 
 
 app.use( function(error, req, res, next) {
