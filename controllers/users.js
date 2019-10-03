@@ -8,7 +8,10 @@ cloudinary.config({
 });
 
 module.exports.getUsers = (req, res) => {
-    console.log("getUsers controller called");
+    User.find( {}, (err, users) => {
+        if(err) return res.status(400).json( {message: "Error occur"} );
+        return res.status(200).json(users);
+    });
 }
 
 module.exports.getSingleUser = (req, res) => {

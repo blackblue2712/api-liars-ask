@@ -11,9 +11,7 @@ const {
 
 const { requireSignin } = require("../controllers/auth");
 
-router.get("/", (req, res) => {
-    res.send( {message: "user controllers"} );
-});
+router.get("/", getUsers);
 
 router.get("/:userId", requireSignin, getInfoLoggedUser);
 router.put("/story/:userId", updateStoryUser);
