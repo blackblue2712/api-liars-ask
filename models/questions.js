@@ -11,6 +11,9 @@ const questionSchema = new Schema ({
             ref: "tags"
         }
     ],
+    anonymousTags: [{
+        type: String
+    }],
     owner: {
         type: ObjectId,
         ref: "users"
