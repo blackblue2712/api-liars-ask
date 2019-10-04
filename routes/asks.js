@@ -6,12 +6,17 @@ const {
 } = require("../controllers/auth");
 
 const {
-    postAsk
+    getQuestions,
+    postAsk,
+    requestRelatedQuestionId,
+    getSigleQuestion,
 } = require("../controllers/asks");
 
-router.post("/new", requireSignin, isAdmin, postAsk)
+router.get("/questions", getQuestions);
+router.get("/questions/:quesId", getSigleQuestion);
+router.post("/new", requireSignin, isAdmin, postAsk);
 
 
-// router.param("blogId", requestRelatedBlogId);
+router.param("quesId", requestRelatedQuestionId);
 
 module.exports = router;
