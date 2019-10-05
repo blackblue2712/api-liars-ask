@@ -30,6 +30,7 @@ const tagRoute = require("./routes/tags");
 const acmRoute = require("./routes/announcements");
 const blogRoute = require("./routes/blogs");
 const AskRoute = require("./routes/asks");
+const voteRoute = require("./routes/votes");
 
 // middleware
 app.use(cors());
@@ -45,6 +46,7 @@ app.use("/tags", tagRoute);
 app.use("/announcements", acmRoute);
 app.use("/blogs", blogRoute);
 app.use("/asks", AskRoute);
+app.use("/votes", voteRoute);
 
 
 app.use( function(error, req, res, next) {

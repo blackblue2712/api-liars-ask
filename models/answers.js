@@ -4,10 +4,12 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 const answerSchema = new Schema ({
     body: String,
-    votes: {
-        type: Number,
-        default: 0
-    },
+    votes: [
+        {
+            type: ObjectId,
+            ref: "users"
+        }
+    ],
     status: {
         type: Boolean,
         default: true
