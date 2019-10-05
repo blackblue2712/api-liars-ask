@@ -15,7 +15,7 @@ router.get("/", getUsers);
 
 router.get("/:userId", requireSignin, getInfoLoggedUser);
 router.put("/story/:userId", updateStoryUser);
-router.put("/info/:userId", updateInfoUser);
+router.put("/info/:userId", requireSignin, updateInfoUser);
 
 router.param("userId", requrestRelatedUserId);
 module.exports = router;

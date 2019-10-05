@@ -54,7 +54,9 @@ module.exports.updateInfoUser = (req, res) => {
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
 
+    console.log("parse");
     form.parse(req, function(err, fields, files) {
+        console.log(fields)
         const { id, fullname, currentPassword } = fields;
         console.log(files.photo);
         if(user.authenticate(currentPassword)) {
