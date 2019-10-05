@@ -18,6 +18,12 @@ const questionSchema = new Schema ({
         type: ObjectId,
         ref: "users"
     },
+    answers: [
+        {
+            type: ObjectId,
+            ref: "answers"
+        }
+    ],
     created: {
         type: Date,
         default: Date.now

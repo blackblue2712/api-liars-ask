@@ -27,5 +27,5 @@ const answerSchema = new Schema ({
 
 })
 
-const answers = mongoose.model("answers", answreSchema);
+const answers = mongoose.model("answers", answerSchema);
 module.exports = answers;
