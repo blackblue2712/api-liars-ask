@@ -26,7 +26,7 @@ module.exports.requestRelatedQuestionId = (req, res, next, id) => {
             path: "answers",
             populate: {
                 path: "owner",
-                select: "email"
+                select: "email photo _id fullname"
             }
         })
         .exec( (err, ques) => {
