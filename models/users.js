@@ -31,7 +31,12 @@ const userSchema = new Schema ({
         type: ObjectId,
         ref: "privileges",
         default: "5d91989c421445308b10631e"
-    }
+    },
+    galleries: [
+        {
+            type: String
+        }
+    ]
 });
 
 userSchema.virtual("password") // password is the name of the input pass to server
