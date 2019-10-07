@@ -98,7 +98,7 @@ module.exports.postUploadImage = (req, res) => {
 
     form.parse(req, function(err, fields, files) {
         cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
-            user.galleries = [...user.galleries, result.secure_url];
+            user.galleries = [result.secure_url, ...user.galleries];
             req.imageURL = result.secure_url;
         }).then( () => {
             user.save( (err, result) => {
@@ -109,4 +109,8 @@ module.exports.postUploadImage = (req, res) => {
             })
         })
     })
+}
+
+module.exports.getUploadImages = (req, res) => {
+    return res.json( {images: req.userPayload.galleries} );
 }
