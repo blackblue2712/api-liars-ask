@@ -11,11 +11,13 @@ const {
     requestRelatedQuestionId,
     getSigleQuestion,
     postAnswer,
-    updateQuestionAfterPostAnswer
+    updateQuestionAfterPostAnswer,
+    getYourQuestions
 } = require("../controllers/asks");
 
 router.get("/questions", getQuestions);
 router.get("/questions/:quesId", getSigleQuestion);
+router.get("/your-questions/", getYourQuestions);
 router.post("/new", requireSignin, isAdmin, postAsk);
 router.post("/answer/new", requireSignin, postAnswer, updateQuestionAfterPostAnswer);
 

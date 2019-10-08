@@ -19,6 +19,15 @@ module.exports.getQuestions = (req, res) => {
         });
 }
 
+module.exports.getYourQuestions = (req, res) => {
+    Ques.find({owner: req.query.userId}, "title _id", (err, ques) => {
+        
+        if(err) return res.status(400).json( {message: "Error occur"} );
+        return res.status(200).json(ques);
+    })
+}
+
+
 module.exports.requestRelatedQuestionId = (req, res, next, id) => {
     Ques
         .findById(id)
