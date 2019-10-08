@@ -8,7 +8,8 @@ const {
     updateInfoUser,
     getInfoLoggedUser,
     getUploadImages,
-    postUploadImage
+    postUploadImage,
+    putDeleteUploadedImage
 } = require("../controllers/users");
 
 const { requireSignin } = require("../controllers/auth");
@@ -20,6 +21,7 @@ router.put("/story/:userId", updateStoryUser);
 router.put("/info/:userId", requireSignin, updateInfoUser);
 router.get("/images-gallery/:userId", getUploadImages);
 router.post("/images-gallery/new/:userId", requireSignin, postUploadImage);
+router.put("/images-gallery/delete/:userId", requireSignin, putDeleteUploadedImage);
 
 router.param("userId", requrestRelatedUserId);
 module.exports = router;

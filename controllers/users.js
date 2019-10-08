@@ -114,3 +114,14 @@ module.exports.postUploadImage = (req, res) => {
 module.exports.getUploadImages = (req, res) => {
     return res.json( {images: req.userPayload.galleries} );
 }
+
+module.exports.putDeleteUploadedImage = async (req, res) => {
+    let {img, photoName} = req.body;
+    let user = req.userPayload;
+    await cloudinary.v2.uploader.destroy(photoName);
+    user.galleries = user.galleries.filter( imgURL => imgURL !== img);
+    await user.save( (err, result) => {
+        if(err) return res.status(400).json( {message: "Error occur (delete uploaded photo)"} );
+        return res.status(200).json( {message: "Photo deleted"} );
+    });
+}
