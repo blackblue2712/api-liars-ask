@@ -11,12 +11,14 @@ const {
     postWriteBlog,
     getSingleBlog,
     requestRelatedBlogId,
-    putEditBlog
+    putEditBlog,
+    getYourBlogs
 } = require("../controllers/blogs");
 
 router.get("/", getBlogs);
 router.get("/all", getAllBlogs);
 router.post("/write", requireSignin, isAdmin, postWriteBlog)
+router.get("/your-blogs", getYourBlogs);
 router.get("/:blogId", getSingleBlog);
 router.put("/edit/:blogId", requireSignin, isAdmin, putEditBlog);
 

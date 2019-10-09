@@ -26,6 +26,12 @@ module.exports.getAllBlogs = (req, res) => {
         return res.status(200).json( blogs );
     })
 }
+module.exports.getYourBlogs = (req, res) => {
+    Blog.find({owner: req.query.userId}, "title _id", (err, blogs) => {
+        if(err) return res.status(400).json( {message: "Error occur (get your blogs) " + err} );
+        return res.status(200).json( blogs );
+    })
+}
 
 module.exports.requestRelatedBlogId = async (req, res, next, id) => {
     await Blog.findById(id, (err, blog) => {
