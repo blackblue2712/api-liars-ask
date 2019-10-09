@@ -5,7 +5,8 @@ const {
     getSignout,
     postPrivileges,
     requireSignin,
-    isAdmin
+    isAdmin,
+    yourAreAdmin
 } = require("../controllers/auth");
 
 const {
@@ -23,6 +24,7 @@ router.post("/signup", [
 
 router.post("/signin", postSignin);
 router.get("/signout", getSignout);
+router.get("/isAdmin", requireSignin, isAdmin, yourAreAdmin);
 router.post("/privileges", requireSignin, isAdmin, postPrivileges);
 
 module.exports = router;

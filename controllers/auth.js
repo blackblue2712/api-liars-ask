@@ -28,16 +28,19 @@ module.exports.postSignin = (req, res) => {
     const { email, password } = req.body;
 
     User.findOne( {email} )
+    .select("_id email hashed_password salt fullname photo")
     .populate("roles", "permission")
     .exec( (err, user) => {
         if(err || !user) {
             return res.status(400).json( {message: "User with that email is not exist"} )
         } else {
+
             if(user.authenticate(password)) {
                 user.hashed_password = undefined;
                 user.salt = undefined;
 
                 const token = jwt.sign( {_id: user._id, roles: user.roles.permission}, process.env.JWT_SECRET );
+                user.roles = undefined;
                 res.cookie('token', token, {maxAge: 900000} );
                 const payload = {token, user}
                 return res.status(200).json( {message: "Signin successfully", payload} );
@@ -55,7 +58,10 @@ module.exports.requireSignin = expressJwt({
 
 module.exports.isAdmin = (req, res, next) => {
     console.log(req.payload)
-    req.payload && req.payload.roles === 7 ? next() : res.status(403).json( {message: 'Permisstion deny'} );
+    req.payload && req.payload.roles === 7 ? next() : res.status(403).json( {message: 'Permission deny'} );
+}
+module.exports.yourAreAdmin = (req, res) => {
+    return res.status(200).json( {message: 'admin'} );
 }
 
 module.exports.getSignout = (req, res) => {

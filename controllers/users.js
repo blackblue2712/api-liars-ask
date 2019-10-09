@@ -20,21 +20,29 @@ module.exports.getSingleUser = (req, res) => {
 
 module.exports.getInfoLoggedUser = (req, res) => {
     console.log(req.payload)
-    req.userPayload.hashed_password = undefined;
-    req.userPayload.salt = undefined;
-
-    return res.json( req.userPayload )
+    if(req.payload._id == req.userPayload._id) {
+        req.userPayload.hashed_password = undefined;
+        req.userPayload.salt = undefined;
+        return res.json( req.userPayload )
+    } else {
+        return res.status(404).json( {message: 404} );
+    }
 }
 
 module.exports.requrestRelatedUserId = async (req, res, next, id) => {
-    await User.findById(id, (err, user) => {
-        if(err || !user) {
-            return res.status(400).json( {message: "Can not find user with that id"} );
-        } else {
-            req.userPayload = user;
-            next();
-        }
-    });
+    try {
+        await User.findById(id, (err, user) => {
+            if(err || !user) {
+                console.log("reject")
+                return res.status(404).json( {message: "404"} );
+            } else {
+                req.userPayload = user;
+                next();
+            }
+        });
+    } catch (err) {
+        return res.status(404).json( {message: "404"} );
+    }
 }
 
 module.exports.updateStoryUser = (req, res) => {
