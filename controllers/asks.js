@@ -76,6 +76,19 @@ module.exports.updateQuestionAfterPostAnswer = (req, res) => {
     });
 }
 
+module.exports.putUpdateQuestion = (req, res) => {
+    let ques = req.quesInfo;
+    let { title, body, tagsnameArray } = req.body;
+    if(body) ques.body = body;
+    ques.title = title;
+    ques.anonymousTags = tagsnameArray;
+
+    ques.save( (err, result) => {
+        if(err) return res.status(400).json( {message: "Error occur (edit ques)"} )
+        return res.status(200).json( {message: "Done"} );
+    });
+}
+
 module.exports.getAnswers = (req, res) => {
 
 }

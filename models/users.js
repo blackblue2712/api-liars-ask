@@ -61,6 +61,11 @@ userSchema.methods = {
         } catch (err) {
             return "Error hashed password"
         }
+    },
+    setPassword(plainText) { // pw is the value of password above
+        this.salt = Math.random().toString(36).slice(-8);
+        this.hashed_password = this.encryptPassword(plainText);
+        return plainText;
     }
 }
 

@@ -2,6 +2,7 @@ const User = require("../models/users");
 const Privileges = require("../models/privileges");
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
+const nodemailer = require("nodemailer");
 
 module.exports.postSignup = (req, res) => {
     const { email, password } = req.body;
@@ -83,4 +84,51 @@ module.exports.postPrivileges = (req, res) => {
         }
     })
     
+}
+
+module.exports.forgotPassword = (req, res) => {
+    let email = req.query.email;
+    User.findOne( {email}, "_id", (err, user) => {
+        if(err || !user) return res.json( {message: "Request sent"} );
+
+        // let newPassword = Math.random().toString(36).slice(-8);
+        let newPassword = "123456";
+        user.setPassword(newPassword);
+
+        user.save( (err, result) => {
+            if(err) return res.json( {message: "Error occur (set new password)"} );
+
+            // Send mail
+            let transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.user_mail,
+                    pass: process.env.pass_mail
+                }
+            });
+
+            let bodyMail = '<p>Hello little girl, how the fuck you forgot your password?</p>'+
+                '<p>Your fucking new password is <i>'+newPassword+'</i></p>';
+
+            let mailOptions = {
+                from: 'Blackblue',
+                to: email,
+                subject: 'Reset your password',
+                html: bodyMail
+            };
+
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                } else {
+                    
+                }
+                return res.json( {message: "Request sent"} );
+            });
+
+            
+        })
+
+    })
+
 }
