@@ -15,11 +15,12 @@ module.exports.getUsers = (req, res) => {
 }
 
 module.exports.getSingleUser = (req, res) => {
-    console.log("getUsers controller called");
+    req.userPayload.hashed_password = undefined;
+    req.userPayload.salt = undefined;
+    return res.status(200).json(req.userPayload)
 }
 
 module.exports.getInfoLoggedUser = (req, res) => {
-    console.log(req.payload)
     if(req.payload._id == req.userPayload._id) {
         req.userPayload.hashed_password = undefined;
         req.userPayload.salt = undefined;
@@ -47,6 +48,7 @@ module.exports.requrestRelatedUserId = async (req, res, next, id) => {
 
 module.exports.updateStoryUser = (req, res) => {
     let user = req.userPayload;
+    console.log(req.body)
     let { bioUpdate, fquotes } = req.body;
     user.bio = bioUpdate;
     user.quotes = fquotes;
@@ -105,17 +107,21 @@ module.exports.postUploadImage = (req, res) => {
     form.keepExtensions = true;
 
     form.parse(req, function(err, fields, files) {
-        cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
-            user.galleries = [result.secure_url, ...user.galleries];
-            req.imageURL = result.secure_url;
-        }).then( () => {
-            user.save( (err, result) => {
-                if(err) {
-                    return res.status(400).json( {message: "Error occur (post upload)"} )
-                }
-                return res.status(200).json( {message: `Image uploaded`, imageURL: req.imageURL} );
+        if(files.photo) {
+            cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
+                user.galleries = [result.secure_url, ...user.galleries];
+                req.imageURL = result.secure_url;
+            }).then( () => {
+                user.save( (err, result) => {
+                    if(err) {
+                        return res.status(400).json( {message: "Error occur (post upload)"} )
+                    }
+                    return res.status(200).json( {message: `Image uploaded`, imageURL: req.imageURL} );
+                })
             })
-        })
+        } else {
+            return res.status(400).json( {message: "No file choose"} )
+        }
     })
 }
 
@@ -132,4 +138,28 @@ module.exports.putDeleteUploadedImage = async (req, res) => {
         if(err) return res.status(400).json( {message: "Error occur (delete uploaded photo)"} );
         return res.status(200).json( {message: "Photo deleted"} );
     });
+}
+
+
+module.exports.followUser = (req, res) => {
+    let { followingId } = req.body;
+    let followedUser = req.userPayload;
+    User.findById(followingId, (err, followingUser) => {
+        if(err) return res.status(400).json( {message: "Error occur (follow user)"} );
+        // Check followed or not
+        if(followedUser.followers.indexOf(followingId) === -1) {
+            followingUser.following.push(followedUser._id);
+            followingUser.save();
+            followedUser.followers.push(followingId);
+            followedUser.save();
+            return res.status(200).json( {message: `Following ${followedUser.fullname}`} );
+        } else {
+            console.log(followedUser._id, followingUser.following);
+            followingUser.following = followingUser.following.filter(fl => fl != String(followedUser._id));
+            followingUser.save();
+            followedUser.followers = followedUser.followers.filter(fl => fl != String(followingId));
+            followedUser.save();
+            return res.status(200).json( {message: `UnFollow ${followedUser.fullname}`} );
+        }
+    })
 }

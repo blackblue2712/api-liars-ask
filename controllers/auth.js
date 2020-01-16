@@ -61,6 +61,11 @@ module.exports.isAdmin = (req, res, next) => {
     console.log(req.payload)
     req.payload && req.payload.roles === 7 ? next() : res.status(403).json( {message: 'Permission deny'} );
 }
+
+module.exports.isCanWriteAcm = (req, res, next) => {
+    req.payload && req.payload.roloes === 1 ? next() : res.status(403).json( {message: "Permission deny"} ); 
+}
+
 module.exports.yourAreAdmin = (req, res) => {
     return res.status(200).json( {message: 'admin'} );
 }
