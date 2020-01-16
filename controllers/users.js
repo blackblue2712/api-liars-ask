@@ -32,7 +32,10 @@ module.exports.getInfoLoggedUser = (req, res) => {
 
 module.exports.requrestRelatedUserId = async (req, res, next, id) => {
     try {
-        await User.findById(id, (err, user) => {
+        await User.findOne({_id: id})
+        .populate("following", "_id fullname email")
+        .populate("followers", "_id fullname email")
+        .exec( (err, user) => {
             if(err || !user) {
                 console.log("reject")
                 return res.status(404).json( {message: "404"} );
@@ -40,7 +43,7 @@ module.exports.requrestRelatedUserId = async (req, res, next, id) => {
                 req.userPayload = user;
                 next();
             }
-        });
+        })
     } catch (err) {
         return res.status(404).json( {message: "404"} );
     }
@@ -147,19 +150,21 @@ module.exports.followUser = (req, res) => {
     User.findById(followingId, (err, followingUser) => {
         if(err) return res.status(400).json( {message: "Error occur (follow user)"} );
         // Check followed or not
-        if(followedUser.followers.indexOf(followingId) === -1) {
+        let followerIds = [];
+        followedUser.followers.map( fl => followerIds.push(String(fl._id)));
+        if(followerIds.indexOf(followingId) === -1) {
             followingUser.following.push(followedUser._id);
             followingUser.save();
             followedUser.followers.push(followingId);
             followedUser.save();
-            return res.status(200).json( {message: `Following ${followedUser.fullname}`} );
+            return res.status(200).json( {message: `Following ${followedUser.fullname || followedUser.email}`} );
         } else {
             console.log(followedUser._id, followingUser.following);
             followingUser.following = followingUser.following.filter(fl => fl != String(followedUser._id));
             followingUser.save();
-            followedUser.followers = followedUser.followers.filter(fl => fl != String(followingId));
+            followedUser.followers = followerIds.filter(fl => fl != String(followingId));
             followedUser.save();
-            return res.status(200).json( {message: `UnFollow ${followedUser.fullname}`} );
+            return res.status(200).json( {message: `UnFollow ${followedUser.fullname || followedUser.email}`} );
         }
     })
 }
