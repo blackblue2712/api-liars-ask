@@ -1,8 +1,7 @@
 const router = require("express").Router();
 
 const {
-    requireSignin,
-    isAdmin
+    requireSignin
 } = require("../controllers/auth");
 
 const {

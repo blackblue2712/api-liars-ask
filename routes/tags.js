@@ -6,11 +6,10 @@ const {
 } = require("../controllers/tags");
 
 const {
-    requireSignin,
-    isAdmin
+    requireSignin
 } = require("../controllers/auth");
 
 router.get("/", getTags);
-router.post("/add", requireSignin, isAdmin, postAddTag);
+router.post("/add", requireSignin, postAddTag);
 
 module.exports = router;

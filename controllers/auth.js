@@ -35,7 +35,7 @@ module.exports.postSignin = (req, res) => {
         if(err || !user) {
             return res.status(400).json( {message: "User with that email is not exist"} )
         } else {
-
+            console.log(user);
             if(user.authenticate(password)) {
                 user.hashed_password = undefined;
                 user.salt = undefined;
@@ -63,7 +63,7 @@ module.exports.isAdmin = (req, res, next) => {
 }
 
 module.exports.isCanWriteAcm = (req, res, next) => {
-    req.payload && req.payload.roloes === 1 ? next() : res.status(403).json( {message: "Permission deny"} ); 
+    req.payload && Number(req.payload.roles) >= 1 ? next() : res.status(403).json( {message: "Permission deny"} ); 
 }
 
 module.exports.yourAreAdmin = (req, res) => {

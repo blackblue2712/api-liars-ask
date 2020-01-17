@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const {
     requireSignin,
-    isAdmin
+    isAdmin,
+    isCanWriteAcm
 } = require("../controllers/auth");
 
 const {
@@ -10,15 +11,19 @@ const {
     getAnnouncements,
     getSingleAcm,
     putEditAcm,
-    deleteEditAcm
+    deleteEditAcm,
+    getAnnouncementsFromSeperateUser
 } = require("../controllers/announcements")
 
 router.get("/", getAnnouncements);
-router.post("/new", requireSignin, isAdmin,postAnnouncement);
+router.post("/new", requireSignin, isCanWriteAcm,postAnnouncement);
 router.get("/:acmId", getSingleAcm);
-router.put("/edit/:acmId", requireSignin, isAdmin, putEditAcm);
-router.delete("/delete/:acmId", requireSignin, isAdmin, deleteEditAcm);
+router.put("/edit/:acmId", requireSignin, isCanWriteAcm, putEditAcm);
+router.delete("/delete/:acmId", requireSignin, isCanWriteAcm, deleteEditAcm);
+
+router.get("/your-acm/:userId", getAnnouncementsFromSeperateUser);
 
 router.param("acmId", requestRelatedAcmId);
+
 
 module.exports = router;
