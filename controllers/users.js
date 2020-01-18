@@ -14,6 +14,22 @@ module.exports.getUsers = (req, res) => {
     });
 }
 
+module.exports.getUsersExceptLoggedOnUser = (req, res) => {
+    let { uid } = req.params;
+    User
+    .find({
+        _id: { $nin: uid }
+    },
+    {
+        sort: -1
+    })
+    .select("_id fullname email photo followers")
+    .exec( (err, users) => {
+        if(err || !users) return res.status(400).json( {message: "error occur - get users except logged on user"} );
+        return res.status(200).json(users);
+    })
+}
+
 module.exports.getSingleUser = (req, res) => {
     req.userPayload.hashed_password = undefined;
     req.userPayload.salt = undefined;

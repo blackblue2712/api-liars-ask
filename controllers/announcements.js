@@ -93,26 +93,21 @@ module.exports.requestRelatedAcmId = async (req, res, next, id) => {
     console.log(req.query)
     const { uid } = req.query;
     
-
-
     await Acm.findById(id, (err, acm) => {
         if(err || !acm) return res.status(400).json( {message: "Error occur 123"} );
 
         User
-        .findById(uid, "following")
+        .findById(uid, "_id following")
         .exec( (err, flw) => {
-            // console.log(flw, acm.owner);
             if(err || !flw) return res.status(400).json( {message: "Error occur 123"} );
-            if(flw.following.indexOf(acm.owner) !== -1) {
+            if(uid == acm.owner || flw.following.indexOf(acm.owner) !== -1) {
                 req.acmInfo = acm;
                 next();
             } else {
                 res.status(400).json( {message: "Error occur 123"} );
             }
         })
-
-
-        
+ 
     });
 }
 

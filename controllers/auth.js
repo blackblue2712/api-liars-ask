@@ -59,7 +59,7 @@ module.exports.requireSignin = expressJwt({
 
 module.exports.isAdmin = (req, res, next) => {
     console.log(req.payload)
-    req.payload && req.payload.roles === 7 ? next() : res.status(403).json( {message: 'Permission deny'} );
+    req.payload && Number(req.payload.roles) === 7 ? next() : res.status(403).json( {message: 'Permission deny'} );
 }
 
 module.exports.isCanWriteAcm = (req, res, next) => {

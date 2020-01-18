@@ -12,12 +12,14 @@ const {
     postAnswer,
     updateQuestionAfterPostAnswer,
     getYourQuestions,
-    putUpdateQuestion
+    putUpdateQuestion,
+    getSingleQuestionToEdit
 } = require("../controllers/asks");
 
 router.get("/questions", getQuestions);
 router.get("/questions/:quesId", getSigleQuestion);
-router.put("/questions/edit/:quesId", putUpdateQuestion);
+router.get("/questions/edit/:quesId", getSingleQuestionToEdit);
+router.put("/questions/edit/:quesId", requireSignin, putUpdateQuestion);
 router.get("/your-questions/", getYourQuestions);
 router.post("/new", requireSignin, postAsk);
 router.post("/answer/new", requireSignin, postAnswer, updateQuestionAfterPostAnswer);

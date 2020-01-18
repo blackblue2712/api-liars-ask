@@ -45,6 +45,20 @@ module.exports.getSingleBlog = (req, res) => {
     return res.status(200).json(req.blogInfo);
 }
 
+module.exports.isOwner = async (req, res, next, id) => {
+    // await User.
+}
+
+module.exports.getSingleBlogToEdit = (req, res) => {
+    let { uid } = req.query;
+    let blog = req.blogInfo;
+    if(blog.owner != uid) {
+        return res.status(404).json( {message: 404} );
+    } else {
+        return res.status(200).json(blog);
+    }
+}
+
 module.exports.putEditBlog = (req, res) => {
     let blog = req.blogInfo;
     let { title, body, tagsnameArray } = req.body;

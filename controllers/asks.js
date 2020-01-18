@@ -60,6 +60,16 @@ module.exports.postAnswer = async (req, res, next) => {
     next();
 }
 
+module.exports.getSingleQuestionToEdit = (req, res) => {
+    let { uid } = req.query;
+    let ques = req.quesInfo;
+    if(ques.owner != uid) {
+        return res.status(404).json( {message: 404} );
+    } else {
+        return res.status(200).json(ques);
+    }
+}
+
 module.exports.updateQuestionAfterPostAnswer = (req, res) => {
     let { quesId } = req.body;
     console.log(req.body);

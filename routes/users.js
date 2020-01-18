@@ -11,12 +11,14 @@ const {
     postUploadImage,
     putDeleteUploadedImage,
     getSingleUser, 
-    followUser
+    followUser,
+    getUsersExceptLoggedOnUser
 } = require("../controllers/users");
 
 const { requireSignin } = require("../controllers/auth");
 
 router.get("/", getUsers);
+router.get("/list/:uid", getUsersExceptLoggedOnUser);
 router.get("/:userId", getSingleUser);
 
 router.get("/profile/:userId", requireSignin, getInfoLoggedUser);
