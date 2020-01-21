@@ -12,14 +12,22 @@ const {
     putDeleteUploadedImage,
     getSingleUser, 
     followUser,
-    getUsersExceptLoggedOnUser
+    getUsersExceptLoggedOnUser,
+    adminGetUsersExceptLoggedOnUser,
+    findUser,
+    getPrivileges
 } = require("../controllers/users");
 
 const { requireSignin } = require("../controllers/auth");
 
 router.get("/", getUsers);
 router.get("/list/:uid", getUsersExceptLoggedOnUser);
-router.get("/:userId", getSingleUser);
+router.get("/admin/list/:uid", adminGetUsersExceptLoggedOnUser);
+
+router.get("/find", findUser);
+router.get("/privileges", getPrivileges);
+
+router.get("/:userId", getSingleUser );
 
 router.get("/profile/:userId", requireSignin, getInfoLoggedUser);
 router.put("/story/:userId", updateStoryUser);

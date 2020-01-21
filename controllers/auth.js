@@ -41,7 +41,7 @@ module.exports.postSignin = (req, res) => {
                 user.salt = undefined;
 
                 const token = jwt.sign( {_id: user._id, roles: user.roles.permission}, process.env.JWT_SECRET );
-                user.roles = undefined;
+                user.roles._id = undefined;
                 res.cookie('token', token, {maxAge: 900000} );
                 const payload = {token, user}
                 return res.status(200).json( {message: "Signin successfully", payload} );
@@ -63,6 +63,7 @@ module.exports.isAdmin = (req, res, next) => {
 }
 
 module.exports.isCanWriteAcm = (req, res, next) => {
+    console.log(req.payload)
     req.payload && Number(req.payload.roles) >= 1 ? next() : res.status(403).json( {message: "Permission deny"} ); 
 }
 

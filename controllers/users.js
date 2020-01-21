@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const Privilege = require("../models/privileges");
 const formidable = require("formidable");
 const cloudinary = require('cloudinary');
 cloudinary.config({ 
@@ -30,6 +31,22 @@ module.exports.getUsersExceptLoggedOnUser = (req, res) => {
     })
 }
 
+module.exports.adminGetUsersExceptLoggedOnUser = (req, res) => {
+    let { uid } = req.params;
+    User
+    .find({
+        _id: { $nin: uid }
+    },
+    {
+        sort: -1
+    })
+    .select("_id fullname email photo followers following roles")
+    .exec( (err, users) => {
+        if(err || !users) return res.status(400).json( {message: "error occur - admin get users except logged on user"} );
+        return res.status(200).json(users);
+    })
+}
+
 module.exports.getSingleUser = (req, res) => {
     req.userPayload.hashed_password = undefined;
     req.userPayload.salt = undefined;
@@ -53,7 +70,7 @@ module.exports.requrestRelatedUserId = async (req, res, next, id) => {
         .populate("followers", "_id fullname email")
         .exec( (err, user) => {
             if(err || !user) {
-                console.log("reject")
+                console.log("reject", err)
                 return res.status(404).json( {message: "404"} );
             } else {
                 req.userPayload = user;
@@ -159,7 +176,6 @@ module.exports.putDeleteUploadedImage = async (req, res) => {
     });
 }
 
-
 module.exports.followUser = (req, res) => {
     let { followingId } = req.body;
     let followedUser = req.userPayload;
@@ -182,5 +198,25 @@ module.exports.followUser = (req, res) => {
             followedUser.save();
             return res.status(200).json( {message: `UnFollow ${followedUser.fullname || followedUser.email}`} );
         }
+    })
+}
+
+module.exports.findUser = (req, res) => {
+    let { name, type } = req.query;
+    User
+    .find({
+        [type]: new RegExp(name, "i")
+    })
+    .select("_id fullname email following followers photo roles")
+    .populate("roles", "_id permission")
+    .exec( (err, users) => {
+        if(err) return res.status(400).json( {message: "error occur - findUser"} );
+        return res.status(200).json( users );
+    })
+}
+
+module.exports.getPrivileges = (req, res) => {
+    Privilege.find({}, (err, pris) => {
+        return res.status(200).json( pris );
     })
 }

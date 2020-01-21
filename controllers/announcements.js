@@ -21,7 +21,7 @@ module.exports.postAnnouncement = (req, res) => {
 
                 // Mail list
                 User
-                .findById(id, "_id followers")
+                .findById(id, "_id  followers")
                 .populate("followers", "email")
                 .exec( (err, emails) => {
                     if(err) return res.status(400).json( {message: "Can't send mail"} )
