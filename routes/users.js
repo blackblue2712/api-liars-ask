@@ -15,10 +15,11 @@ const {
     getUsersExceptLoggedOnUser,
     adminGetUsersExceptLoggedOnUser,
     findUser,
-    getPrivileges
+    getPrivileges,
+    putChangePrivileges
 } = require("../controllers/users");
 
-const { requireSignin } = require("../controllers/auth");
+const { requireSignin, isAdmin } = require("../controllers/auth");
 
 router.get("/", getUsers);
 router.get("/list/:uid", getUsersExceptLoggedOnUser);
@@ -26,6 +27,7 @@ router.get("/admin/list/:uid", adminGetUsersExceptLoggedOnUser);
 
 router.get("/find", findUser);
 router.get("/privileges", getPrivileges);
+router.put("/privileges", requireSignin, isAdmin, putChangePrivileges);
 
 router.get("/:userId", getSingleUser );
 

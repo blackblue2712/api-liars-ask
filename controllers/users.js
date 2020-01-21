@@ -33,6 +33,7 @@ module.exports.getUsersExceptLoggedOnUser = (req, res) => {
 
 module.exports.adminGetUsersExceptLoggedOnUser = (req, res) => {
     let { uid } = req.params;
+    console.log(uid, "**************===")
     User
     .find({
         _id: { $nin: uid }
@@ -40,7 +41,8 @@ module.exports.adminGetUsersExceptLoggedOnUser = (req, res) => {
     {
         sort: -1
     })
-    .select("_id fullname email photo followers following roles")
+    .select("_id fullname email following followers photo roles")
+    .populate("roles", "_id permission")
     .exec( (err, users) => {
         if(err || !users) return res.status(400).json( {message: "error occur - admin get users except logged on user"} );
         return res.status(200).json(users);
@@ -202,10 +204,15 @@ module.exports.followUser = (req, res) => {
 }
 
 module.exports.findUser = (req, res) => {
-    let { name, type } = req.query;
+    let { name, uid } = req.query;
     User
     .find({
-        [type]: new RegExp(name, "i")
+        _id: { $nin: uid },
+        // [type]: new RegExp(name, "i"),
+        $or: [
+            { "email": new RegExp(name, "i") },
+            { "fullname": new RegExp(name, "i") },
+        ]
     })
     .select("_id fullname email following followers photo roles")
     .populate("roles", "_id permission")
@@ -220,3 +227,15 @@ module.exports.getPrivileges = (req, res) => {
         return res.status(200).json( pris );
     })
 }
+
+module.exports.putChangePrivileges = (req, res) => {
+    let { uid, pid } = req.body;
+    User.findById(uid, "_id roles", (err, user) => {
+        if(err) return res.status(400).json( {message: "User not found"} );
+        user.roles = pid;
+        user.save( (err, result) => {
+            if(err) return res.status(400).json( {message: "Can not modify this user"} );
+            return res.status(200).json( {message: `Permission Changed`} );
+        });
+    })
+};
