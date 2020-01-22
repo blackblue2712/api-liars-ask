@@ -1,12 +1,25 @@
 const Blog = require("../models/blogs");
+const { getTagIds } = require("../utilities/helper");
 
 module.exports.postWriteBlog = (req, res) => {
     let blog = new Blog(req.body);
     blog.anonymousTags = req.body.tagsnameArray;
-    blog.save( (err, result) => {
-        if(err) return res.status(400).json( {message: "Error occur (wirte blog)"} );
-        return res.status(200).json( {message: "Done"} )
-    });
+
+    let { tagsnameArray } = req.body;
+    let tagsNeedToReference = [];
+    Promise.all(
+        tagsnameArray.map( async tag => {
+            let data = await getTagIds(tag);
+            tagsNeedToReference = [...tagsNeedToReference, data];
+        })
+    )
+    .then( () => {
+        tagsNeedToReference.map( t => blog.tags.push(t._id));
+        blog.save( (err, result) => {
+            if(err) return res.status(400).json( {message: "Error occur (wirte blog)"} );
+            return res.status(200).json( {message: "Done"} )
+        });
+    })
 }
 
 module.exports.getBlogs = (req, res) => {
@@ -15,16 +28,21 @@ module.exports.getBlogs = (req, res) => {
         .limit(Number(req.query.limit))
         .sort( {created: -1} )
         .select("_id title")
+        .populate("tags", "_id name count description")
         .exec( (err, blogs) => {
             if(err) return res.status(400).json( {message: "Error occur (get blogs) " + err} );
             return res.status(200).json( blogs );
         });
 }
 module.exports.getAllBlogs = (req, res) => {
-    Blog.find({}, (err, blogs) => {
+    Blog
+    .find({})
+    .populate("tags", "_id name count description")
+    .exec( (err, blogs) => {
         if(err) return res.status(400).json( {message: "Error occur (get all blogs) " + err} );
         return res.status(200).json( blogs );
     })
+    
 }
 module.exports.getYourBlogs = (req, res) => {
     Blog.find({owner: req.query.userId}, "title _id", (err, blogs) => {
@@ -33,12 +51,15 @@ module.exports.getYourBlogs = (req, res) => {
     })
 }
 
-module.exports.requestRelatedBlogId = async (req, res, next, id) => {
-    await Blog.findById(id, (err, blog) => {
+module.exports.requestRelatedBlogId = (req, res, next, id) => {
+    Blog
+    .findById(id)
+    .populate("tags", "_id name description count")
+    .exec((err, blog) => {
         if(err) return res.status(400).json( {message: "Error occur (get single blog)"} );
         req.blogInfo = blog;
+        next();
     });
-    next();
 }
 
 module.exports.getSingleBlog = (req, res) => {

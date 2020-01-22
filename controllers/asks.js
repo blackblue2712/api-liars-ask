@@ -1,18 +1,32 @@
 const Ques = require("../models/questions");
 const Answer = require("../models/answers");
+const { getTagIds } = require("../utilities/helper");
 
 module.exports.postAsk = (req, res) => {
     let ask = new Ques(req.body);
     ask.anonymousTags = req.body.tagsnameArray;
-    ask.save( (err, result) => {
-        if(err) return res.status(400).json( {message: "Error occur (ask question)"} );
-        return res.status(200).json( {message: "Done"} )
-    });
+
+    let { tagsnameArray } = req.body;
+    let tagsNeedToReference = [];
+    Promise.all(
+        tagsnameArray.map( async tag => {
+            let data = await getTagIds(tag);
+            tagsNeedToReference = [...tagsNeedToReference, data];
+        })
+    )
+    .then( () => {
+        tagsNeedToReference.map( t => ask.tags.push(t));
+        ask.save( (err, result) => {
+            if(err) return res.status(400).json( {message: "Error occur (ask question)"} );
+            return res.status(200).json( {message: "Done"} )
+        });
+    })
 }
 
 module.exports.getQuestions = (req, res) => {
     Ques.find({})
         .sort({created: -1})
+        .populate("tags", "_id name description count ")
         .exec( (err, ques) => {
             if(err) return res.status(400).json( {message: "Error occur (get questions)"} );
             return res.status(200).json( {message: `${ques.length} questions loaded`, payload: ques} );
@@ -38,6 +52,7 @@ module.exports.requestRelatedQuestionId = (req, res, next, id) => {
                 select: "email photo _id fullname"
             }
         })
+        .populate("tags", "_id name description count")
         .exec( (err, ques) => {
             if(err || !ques) return res.status(200).json( {message: "Error occur (get single question)"} );
             req.quesInfo = ques;
