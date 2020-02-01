@@ -31,6 +31,7 @@ const acmRoute = require("./routes/announcements");
 const blogRoute = require("./routes/blogs");
 const AskRoute = require("./routes/asks");
 const voteRoute = require("./routes/votes");
+const reqUpgrade = require("./routes/request-upgrade");
 
 // middleware
 app.use(cors());
@@ -47,6 +48,7 @@ app.use("/announcements", acmRoute);
 app.use("/blogs", blogRoute);
 app.use("/asks", AskRoute);
 app.use("/votes", voteRoute);
+app.use("/request", reqUpgrade);
 
 
 app.use( function(error, req, res, next) {

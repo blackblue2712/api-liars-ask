@@ -16,7 +16,9 @@ const {
     adminGetUsersExceptLoggedOnUser,
     findUser,
     getPrivileges,
-    putChangePrivileges
+    putChangePrivileges,
+    requestUpgradeToSpecialAccount
+
 } = require("../controllers/users");
 
 const { requireSignin, isAdmin } = require("../controllers/auth");
@@ -39,6 +41,8 @@ router.post("/images-gallery/new/:userId", requireSignin, postUploadImage);
 router.put("/images-gallery/delete/:userId", requireSignin, putDeleteUploadedImage);
 
 router.put("/follow/:userId", followUser);
+
+router.post("/upgrade-account", requireSignin ,requestUpgradeToSpecialAccount)
 
 router.param("userId", requrestRelatedUserId);
 module.exports = router;

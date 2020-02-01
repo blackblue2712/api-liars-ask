@@ -1,7 +1,9 @@
 const User = require("../models/users");
 const Privilege = require("../models/privileges");
+const RqUpgrade = require("../models/request-upgrade");
 const formidable = require("formidable");
 const cloudinary = require('cloudinary');
+
 cloudinary.config({ 
     cloud_name: process.env.CLOUD_NAME, 
     api_key: process.env.API_KEY, 
@@ -239,3 +241,34 @@ module.exports.putChangePrivileges = (req, res) => {
         });
     })
 };
+
+module.exports.requestUpgradeToSpecialAccount = (req, res) => {
+    let rq = new RqUpgrade( );
+    let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
+
+    form.parse(req, function(err, fields, files) {
+        let { email, description, _id } = fields;
+        // rq.findOne( {email}, "_id", (err, result) => {
+        //     if(result) return res.status.json( {message: "Your email has been registered"})
+        // })
+        rq.email = email;
+        rq.description = description;
+        rq.owner = _id;
+        if(files.photo) {
+            cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
+                rq.photo = result.secure_url;
+            }).then( () => {
+                rq.save( (err, result) => {
+                    if(err) {
+                        return res.status(400).json( {message: "Error occur (request upgrade account)"} )
+                    }
+                    return res.status(200).json( {message: `Your request was sent`} );
+                });
+            })
+        } else {
+            return res.status(400).json( {message: "No file choose"} )
+        }
+    })
+}
+
