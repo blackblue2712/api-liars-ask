@@ -98,11 +98,11 @@ module.exports.forgotPassword = (req, res) => {
         if(err || !user) return res.json( {message: "Request sent"} );
 
         // let newPassword = Math.random().toString(36).slice(-8);
-        let newPassword = "123456";
-        user.setPassword(newPassword);
-
+        let randomResetCode =  Math.random().toString(36).substring(7) + new Date().getTime();
+        let resetLink = process.env.REACT_APP_CLIENT_URL + "/auth/reset-password/" + randomResetCode;
+        user.resetCode = randomResetCode;
         user.save( (err, result) => {
-            if(err) return res.json( {message: "Error occur (set new password)"} );
+            if(err) return res.json( {message: "Error occur (set reset password code)"} );
 
             // Send mail
             let transporter = nodemailer.createTransport({
@@ -113,8 +113,8 @@ module.exports.forgotPassword = (req, res) => {
                 }
             });
 
-            let bodyMail = '<p>Hello little girl, how the fuck you forgot your password?</p>'+
-                '<p>Your fucking new password is <i>'+newPassword+'</i></p>';
+            let bodyMail = `<p>Hello little girl, how the fuck you forgot your password?</p>
+                <a href="${resetLink}">Click the following link to reset your password</a>`;
 
             let mailOptions = {
                 from: 'Blackblue',
@@ -137,4 +137,19 @@ module.exports.forgotPassword = (req, res) => {
 
     })
 
+}
+
+module.exports.resetPassword = (req, res) => {
+    let { resetCode, pwd } = req.body;
+    User
+    .findOne( {resetCode} )
+    .exec( (err, result) => {
+        if(err || !result) return res.status(400).json( {message: "Reset code was expired"} )
+        result.resetCode = "";
+        result.setPassword(pwd);
+        result.save( (err, rs) => {
+            if(err) return res.status(400).json( {message: "Error occur - save reset password"} );
+            return res.status(200).json( {message: "Change password successfully"} );
+        });
+    }); 
 }

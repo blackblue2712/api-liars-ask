@@ -20,7 +20,7 @@ const userSchema = new Schema ({
         type: Boolean,
         default: true
     },
-    activeLink: String,
+    resetCode: String,
     bio: String,
     quotes: String,
     isGuildMakeAQuestion: {
