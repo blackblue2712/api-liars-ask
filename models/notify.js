@@ -8,7 +8,7 @@ const notifySchema = new Schema({
         ref: "users"
     },
     name: "",
-    reciever: {
+    receiver: {
         type: ObjectId,
         ref: "users"
     },

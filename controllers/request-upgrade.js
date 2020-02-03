@@ -1,6 +1,7 @@
 const Rq = require("../models/request-upgrade");
 const Notify = require("../models/notify");
 const nodemailer = require("nodemailer");
+const User = require("../models/users");
 
 module.exports.requestRelatedRequestId = (req, res, next, id) => {
     console.log("here", id)
@@ -32,11 +33,11 @@ module.exports.postAccecptRequestUpgradeToSpecialAccount = (req, res) => {
     rq.statusString = "Accepted";
 
     try {
-        let { photo, name, reciever, owner, content } = req.body;
+        let { photo, name, receiver, owner, content } = req.body;
         content = !content ? `Congratulation!, your request was approve. To write announcements for who was following you, you must verify ${rq.email}. We were sent a link contain active code, check it now.` : content;
         let ntf = new Notify();
         ntf.photo = photo;
-        ntf.reciever = reciever
+        ntf.receiver = receiver
         ntf.name = name;
         ntf.owner = owner;
         ntf.content = content;
@@ -91,11 +92,11 @@ module.exports.postRejectRequestUpgradeToSpecialAccount = (req, res) => {
     rq.status = 3;
     rq.statusString = "Rejected";
 
-    let { photo, name, reciever, owner, content } = req.body;
+    let { photo, name, receiver, owner, content } = req.body;
     content = !content ? `Unfortunately, we weren't albe to approve your request update to special account submitted on ${new Date(rq.created).toDateString()} for ${rq.email}` : content;
     let ntf = new Notify();
     ntf.photo = photo;
-    ntf.reciever = reciever
+    ntf.receiver = receiver
     ntf.name = name;
     ntf.owner = owner;
     ntf.content = content;
@@ -126,12 +127,23 @@ module.exports.getVerifyRequestUpgradeToSpecialAccount = (req, res) => {
             
             rq.save( (err, result) => {
                 if(err || ! result) return res.status(400).json( {message: "Error occur - cannot verified request "} );
-                let ntf = new Notify();
-                ntf.receiver = rq.owner;
-                ntf.content = `Congratilation, your request was verified`;
-                ntf.save( (err, ntfResult) => {
-                    return res.status(200).json( {message: "Request verified", ntf: ntfResult} );
+
+                User.findOne({email: result.email}, "_id roles", (err, user) => {
+                    if(err) return res.status(400).json( {message: "User not found"} );
+                    user.roles = "5d9195581e2c742f49191e0b";
+                    user.save( (err, result) => {
+                        if(err) return res.status(400).json( {message: "Can not modify this user"} );
+                        // return res.status(200).json( {message: `Permission Changed`} );
+                        let ntf = new Notify();
+                        ntf.receiver = rq.owner;
+                        ntf.content = `Congratilation, your request for ${rq.email} was verified. Please logout that email to make sure it was changed`;
+                        ntf.save( (err, ntfResult) => {
+                            return res.status(200).json( {message: "Request verified", ntf: ntfResult} );
+                        })
+                    });
                 })
+
+                
             })
         })
     } catch (err) {

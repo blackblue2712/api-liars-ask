@@ -252,23 +252,26 @@ module.exports.requestUpgradeToSpecialAccount = (req, res) => {
         // rq.findOne( {email}, "_id", (err, result) => {
         //     if(result) return res.status.json( {message: "Your email has been registered"})
         // })
-        rq.email = email;
-        rq.description = description;
-        rq.owner = _id;
-        if(files.photo) {
-            cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
-                rq.photo = result.secure_url;
-            }).then( () => {
-                rq.save( (err, result) => {
-                    if(err) {
-                        return res.status(400).json( {message: "Error occur (request upgrade account)"} )
-                    }
-                    return res.status(200).json( {message: `Your request was sent`} );
-                });
-            })
-        } else {
-            return res.status(400).json( {message: "No file choose"} )
-        }
+        User.findOne({email}, (err, result) => {
+            if(err || !result) return res.status(404).json( {message: `Email was not registered.`} );
+            rq.email = email;
+            rq.description = description;
+            rq.owner = _id;
+            if(files.photo) {
+                cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
+                    rq.photo = result.secure_url;
+                }).then( () => {
+                    rq.save( (err, result) => {
+                        if(err) {
+                            return res.status(400).json( {message: "Error occur (request upgrade account)"} )
+                        }
+                        return res.status(200).json( {message: `Your request was sent`} );
+                    });
+                })
+            } else {
+                return res.status(400).json( {message: "No file choose"} )
+            }
+        })
     })
 }
 
