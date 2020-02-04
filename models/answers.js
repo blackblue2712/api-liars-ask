@@ -10,6 +10,12 @@ const answerSchema = new Schema ({
             ref: "users"
         }
     ],
+    votesDown: [
+        {
+            type: ObjectId,
+            ref: "users"
+        }
+    ],
     status: {
         type: Boolean,
         default: true

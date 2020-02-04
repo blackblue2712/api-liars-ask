@@ -2,13 +2,13 @@
 const router = require("express").Router();
 const {
     voteUp,
-    VoteDown,
+    voteDown,
     requestRelatedAnswerId,
     
 } = require("../controllers/votes");
 
 router.post("/answer/voteUp/:ansId", voteUp);
-// router.post("/answer/votDown/:ansId", VoteDown);
+router.post("/answer/voteDown/:ansId", voteDown);
 
 router.param("ansId", requestRelatedAnswerId);
 
