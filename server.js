@@ -6,7 +6,7 @@ const app = express();
 // port
 const PORT = process.env.PORT || 8080;
 
-//
+// depedencies
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -33,6 +33,7 @@ const AskRoute = require("./routes/asks");
 const voteRoute = require("./routes/votes");
 const reqUpgrade = require("./routes/request-upgrade");
 const notifyRoute = require("./routes/notify");
+const chanelRoute = require("./routes/chanels");
 
 // middleware
 app.use(cors());
@@ -40,6 +41,7 @@ app.use(morgan("dev"));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static('public'));
+
 // use routes
 app.use("/", indexRoute);
 app.use("/auth", authRoute);
@@ -51,6 +53,7 @@ app.use("/asks", AskRoute);
 app.use("/votes", voteRoute);
 app.use("/request", reqUpgrade);
 app.use("/notify", notifyRoute);
+app.use("/chanels", chanelRoute);
 
 
 app.use( function(error, req, res, next) {
@@ -65,7 +68,95 @@ app.use(function (req, res, next) {
     res.status(404).send({error: "404 not found!"});
 });
 
+/**
+ * REALTIME
+ */
+
+let http = require('http').createServer(app);
+let io = require('socket.io')(http);
+let UserClass = require("./utilities/UserClass");
+let users = new UserClass();
+let connectedIndividualUsers = {};
+
+io.on("connection", function(socket) {
+    console.log("a user connected ...");
+    socket.on("disconnect", () => {
+        let userDisconnect = users.RemoveDisconnectdChanelUser(socket.id);
+        console.log("user disconnected", userDisconnect)
+        if(userDisconnect) {
+            io.to(userDisconnect.room).emit("list-connected-chanel-users", users.GetConnectedChanelUser(userDisconnect.room));
+        }
+    })
+
+    /**
+     * Comunity Chat
+     */
+    socket.on("join-chanel", (data, cb) => {
+        let { chanelId, sid, uid, name, photo } = data;
+
+        let listConnectedUids = users.GetUidConnectedChanelUser(chanelId);
+        let checkUser = listConnectedUids.indexOf(uid);
+        console.log("join", chanelId)
+        socket.join(data.chanelId);
+        if(checkUser === -1) {
+            users.AddConnectedChanelUser(sid, uid, name, photo, chanelId);
+        }
+        io.to(chanelId).emit("list-connected-chanel-users", users.GetConnectedChanelUser(chanelId));
+        
+        cb();
+    })
+
+    socket.on("client-send-message-from-chanel", (data, cb) => {
+        console.log("client-send-message-from-chanel", data.chanelId)
+        let { chanelId } = data;
+        data.sid = socket.id;
+
+        io.to(chanelId).emit("server-send-message-from-chanel", {status: 200, data});
+
+        // save message to database
+        
+        cb();
+    });
+
+
+    /**
+     * Private Chat
+     */
+    socket.on("join-individual", (data, cb) => {
+        socket.username = data.username;
+        socket.uid = data.uid;
+        connectedIndividualUsers[data.uid] = socket;
+
+        cb();
+    });
+
+    socket.on("client-send-message-from-individual-user", (data, cb) => {
+        let { to, message, photo, from } = data;
+        console.log(data)
+        if(connectedIndividualUsers.hasOwnProperty(to)) {
+            connectedIndividualUsers[to].emit("server-send-message-from-individual-user", {
+                message,                    // message of sender
+                username: socket.username,  // username of sender
+                to,                         // receiver id
+                from,                       // sender id
+                photo                       // Photo of sender
+            })
+        }
+
+        cb();
+    })
+
+})
+
+
+
+/**
+ * REALTIME
+ */
+
+
 // Listen port
-app.listen(PORT, () => {
+http.listen(PORT, () => {
     console.log(`Liars-ask react listen on port ${PORT}`);
 })
+
