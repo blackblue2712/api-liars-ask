@@ -117,9 +117,6 @@ io.on("connection", function(socket) {
             data.sid = socket.id;
     
             io.to(chanelId).emit("server-send-message-from-chanel", {status: 200, data});
-    
-            // save message to database
-            
             cb();
         } catch(e) { console.log("!error client-send-message-from-chanel", e) }
     });
@@ -159,11 +156,24 @@ io.on("connection", function(socket) {
                 photo                       // Photo of sender
             })
         }
-
         cb();
-    })
+    });
+    socket.on("client-send-message-contain-image-from-individual-user", (data, cb) => {
+        let { to, contentPhoto, photo, from } = data;
+        console.log(data)
+        if(connectedIndividualUsers.hasOwnProperty(to)) {
+            connectedIndividualUsers[to].emit("server-send-message-contain-image-from-individual-user", {
+                contentPhoto,               // message of sender
+                username: socket.username,  // username of sender
+                to,                         // receiver id
+                from,                       // sender id
+                photo                       // Photo of sender
+            })
+        }
+        cb();
+    });
 
-})
+});
 
 
 
