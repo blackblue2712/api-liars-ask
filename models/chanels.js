@@ -28,8 +28,10 @@ const chanelSchema = new Schema({
                 require: true
             },
             content: {
-                type: String,
-                require: true
+                type: String
+            },
+            photo: {
+                type: String
             },
             created: {
                 type: Date,

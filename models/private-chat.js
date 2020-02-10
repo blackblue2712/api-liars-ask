@@ -5,17 +5,19 @@ const ObjectId = Schema.Types.ObjectId;
 const privateChatSchema = new Schema({
     sender: {
         type: ObjectId,
-        ref: "Users",
+        ref: "users",
         require: true
     },
     receiver: {
         type: ObjectId,
-        ref: "Users",
+        ref: "users",
         require: true
     },
     content: {
-        type: String,
-        require: String
+        type: String
+    },
+    photo: {
+        type: String
     },
     created: {
         type: Date,

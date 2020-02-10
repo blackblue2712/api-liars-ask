@@ -34,6 +34,7 @@ const voteRoute = require("./routes/votes");
 const reqUpgrade = require("./routes/request-upgrade");
 const notifyRoute = require("./routes/notify");
 const chanelRoute = require("./routes/chanels");
+const pmRoute = require("./routes/private-chat");
 
 // middleware
 app.use(cors());
@@ -54,6 +55,7 @@ app.use("/votes", voteRoute);
 app.use("/request", reqUpgrade);
 app.use("/notify", notifyRoute);
 app.use("/chanels", chanelRoute);
+app.use("/pm", pmRoute);
 
 
 app.use( function(error, req, res, next) {
@@ -92,30 +94,45 @@ io.on("connection", function(socket) {
      * Comunity Chat
      */
     socket.on("join-chanel", (data, cb) => {
-        let { chanelId, sid, uid, name, photo } = data;
-
-        let listConnectedUids = users.GetUidConnectedChanelUser(chanelId);
-        let checkUser = listConnectedUids.indexOf(uid);
-        console.log("join", chanelId)
-        socket.join(data.chanelId);
-        if(checkUser === -1) {
-            users.AddConnectedChanelUser(sid, uid, name, photo, chanelId);
-        }
-        io.to(chanelId).emit("list-connected-chanel-users", users.GetConnectedChanelUser(chanelId));
-        
-        cb();
+        try {
+            let { chanelId, sid, uid, name, photo } = data;
+    
+            let listConnectedUids = users.GetUidConnectedChanelUser(chanelId);
+            let checkUser = listConnectedUids.indexOf(uid);
+            console.log("join", chanelId)
+            socket.join(data.chanelId);
+            if(checkUser === -1) {
+                users.AddConnectedChanelUser(sid, uid, name, photo, chanelId);
+            }
+            io.to(chanelId).emit("list-connected-chanel-users", users.GetConnectedChanelUser(chanelId));
+            
+            cb();
+        } catch (e) { console.log("!error join-chanel", e) }
     })
 
     socket.on("client-send-message-from-chanel", (data, cb) => {
-        console.log("client-send-message-from-chanel", data.chanelId)
-        let { chanelId } = data;
-        data.sid = socket.id;
+        try {
+            console.log("client-send-message-from-chanel", data)
+            let { chanelId } = data;
+            data.sid = socket.id;
+    
+            io.to(chanelId).emit("server-send-message-from-chanel", {status: 200, data});
+    
+            // save message to database
+            
+            cb();
+        } catch(e) { console.log("!error client-send-message-from-chanel", e) }
+    });
 
-        io.to(chanelId).emit("server-send-message-from-chanel", {status: 200, data});
-
-        // save message to database
-        
-        cb();
+    socket.on("client-send-message-contain-image-from-chanel", (data, cb) => {
+        try {
+            console.log("client-send-message-contain-image-from-chanel", data)
+            let { chanelId } = data;
+            data.sid = socket.id;
+    
+            io.to(chanelId).emit("server-send-message-contain-image-from-chanel", {status: 200, data});
+            cb();
+        } catch(e) { console.log("!error client-send-message-from-chanel", e) }
     });
 
 

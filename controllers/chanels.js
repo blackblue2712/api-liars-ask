@@ -3,9 +3,9 @@ const cloudinary = require('cloudinary');
 const Chanel = require("../models/chanels");
 
 cloudinary.config({ 
-    cloud_name: process.env.CLOUD_NAME, 
-    api_key: process.env.API_KEY, 
-    api_secret: process.env.API_SECRET 
+    cloud_name: process.env.CLOUD_NAME2, 
+    api_key: process.env.API_KEY2, 
+    api_secret: process.env.API_SECRET2
 });
 
 module.exports.getChanels = (req, res) => {
@@ -67,16 +67,37 @@ module.exports.postCreateChanelServer = (req, res) => {
 }
 
 module.exports.postSaveChanelMessage = (req, res) => {
-    let { cid, uid, content } = req.body;
-    console.log("***SEND***", { cid, uid, content })
-    Chanel
-    .findById(cid)
-    .exec( (err, chanel) => {
-        if(err || !chanel) {
-            return res.status(200).json( {message: "error occur (save chanel message)"} );
-        }
-        chanel.chanelMessages.push({ sender: uid, content });
-        chanel.save();
-        return res.status(200).json({});
-    })
+    try {
+        let form = new formidable.IncomingForm();
+        form.keepExtensions = true;
+    
+        form.parse(req, function(err, fields, files) {
+            let { cid, uid, content } = fields;
+            console.log("***SEND***", { cid, uid, content })
+            Chanel
+            .findById(cid)
+            .exec( (err, chanel) => {
+                if(err || !chanel) {
+                    return res.status(200).json( {message: "error occur (save chanel message)"} );
+                }
+                if(files.photo) {
+                    cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
+                        if(error) return res.status(400).json( {message: "error occur (photo chanel)"} )
+                        chanel.chanelMessages.push({photo: result.secure_url, sender: uid, content});
+                        this.urlContainImage = result.secure_url;
+                    }).then( () => {
+                        chanel.save();
+                        return res.status(200).json( {urlContainImage: this.urlContainImage} );
+                    });
+                } else {
+                    chanel.chanelMessages.push({content, sender: uid});
+                    chanel.save();
+                    return res.json({});
+                }
+            });
+        });
+    } catch(e) { console.log(e) } 
+
+    
+    
 }
