@@ -2,6 +2,9 @@
 // express
 const express = require("express");
 const app = express();
+const { createServer } = require("http");
+const socket = require("./socket");
+const server = createServer(app);
 
 // port
 const PORT = process.env.PORT || 8080;
@@ -70,120 +73,12 @@ app.use(function (req, res, next) {
     res.status(404).send({error: "404 not found!"});
 });
 
-/**
- * REALTIME
- */
 
-let http = require('http').createServer(app);
-let io = require('socket.io')(http);
-let UserClass = require("./utilities/UserClass");
-let users = new UserClass();
-let connectedIndividualUsers = {};
-
-io.on("connection", function(socket) {
-    console.log("a user connected ...");
-    socket.on("disconnect", () => {
-        let userDisconnect = users.RemoveDisconnectdChanelUser(socket.id);
-        console.log("user disconnected", userDisconnect)
-        if(userDisconnect) {
-            io.to(userDisconnect.room).emit("list-connected-chanel-users", users.GetConnectedChanelUser(userDisconnect.room));
-        }
-    })
-
-    /**
-     * Comunity Chat
-     */
-    socket.on("join-chanel", (data, cb) => {
-        try {
-            let { chanelId, sid, uid, name, photo } = data;
-    
-            let listConnectedUids = users.GetUidConnectedChanelUser(chanelId);
-            let checkUser = listConnectedUids.indexOf(uid);
-            console.log("join", chanelId)
-            socket.join(data.chanelId);
-            if(checkUser === -1) {
-                users.AddConnectedChanelUser(sid, uid, name, photo, chanelId);
-            }
-            io.to(chanelId).emit("list-connected-chanel-users", users.GetConnectedChanelUser(chanelId));
-            
-            cb();
-        } catch (e) { console.log("!error join-chanel", e) }
-    })
-
-    socket.on("client-send-message-from-chanel", (data, cb) => {
-        try {
-            console.log("client-send-message-from-chanel", data)
-            let { chanelId } = data;
-            data.sid = socket.id;
-    
-            io.to(chanelId).emit("server-send-message-from-chanel", {status: 200, data});
-            cb();
-        } catch(e) { console.log("!error client-send-message-from-chanel", e) }
-    });
-
-    socket.on("client-send-message-contain-image-from-chanel", (data, cb) => {
-        try {
-            console.log("client-send-message-contain-image-from-chanel", data)
-            let { chanelId } = data;
-            data.sid = socket.id;
-    
-            io.to(chanelId).emit("server-send-message-contain-image-from-chanel", {status: 200, data});
-            cb();
-        } catch(e) { console.log("!error client-send-message-from-chanel", e) }
-    });
-
-
-    /**
-     * Private Chat
-     */
-    socket.on("join-individual", (data, cb) => {
-        socket.username = data.username;
-        socket.uid = data.uid;
-        connectedIndividualUsers[data.uid] = socket;
-
-        cb();
-    });
-
-    socket.on("client-send-message-from-individual-user", (data, cb) => {
-        let { to, message, photo, from } = data;
-        console.log(data)
-        if(connectedIndividualUsers.hasOwnProperty(to)) {
-            connectedIndividualUsers[to].emit("server-send-message-from-individual-user", {
-                message,                    // message of sender
-                username: socket.username,  // username of sender
-                to,                         // receiver id
-                from,                       // sender id
-                photo                       // Photo of sender
-            })
-        }
-        cb();
-    });
-    socket.on("client-send-message-contain-image-from-individual-user", (data, cb) => {
-        let { to, contentPhoto, photo, from } = data;
-        console.log(data)
-        if(connectedIndividualUsers.hasOwnProperty(to)) {
-            connectedIndividualUsers[to].emit("server-send-message-contain-image-from-individual-user", {
-                contentPhoto,               // message of sender
-                username: socket.username,  // username of sender
-                to,                         // receiver id
-                from,                       // sender id
-                photo                       // Photo of sender
-            })
-        }
-        cb();
-    });
-
-});
-
-
-
-/**
- * REALTIME
- */
 
 
 // Listen port
-http.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Liars-ask react listen on port ${PORT}`);
 })
 
+socket(server);

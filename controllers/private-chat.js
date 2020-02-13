@@ -11,7 +11,7 @@ cloudinary.config({
 
 module.exports.getMessageIndividualUser = (req, res) => {
     try {
-        let { senderId, receiverId } = req.query;
+        let { senderId, receiverId, skip, limit } = req.query;
         PM.find({
             $or: [
                 {
@@ -30,14 +30,16 @@ module.exports.getMessageIndividualUser = (req, res) => {
             ]
             
         })
-        // .sort({created: -1})
+        .limit(Number(limit))
+        .skip(Number(skip))
+        .sort({created: -1})
         .populate("sender", "_id fullname email photo")
         .populate("receiver", "_id fullname email photo")
         .exec( (err, messages) => {
             if(err) {
                 return res.status(400).json( {message: "error occur - get message individual user"} );
             } else {
-                return res.status(200).json(messages);
+                return res.status(200).json(messages.reverse());
             }
         });
     } catch (err) {

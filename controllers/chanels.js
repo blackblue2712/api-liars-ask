@@ -1,6 +1,7 @@
 const formidable = require("formidable");
 const cloudinary = require('cloudinary');
 const Chanel = require("../models/chanels");
+const CM = require("../models/chanel-chat");
 
 cloudinary.config({ 
     cloud_name: process.env.CLOUD_NAME2, 
@@ -12,7 +13,7 @@ module.exports.getChanels = (req, res) => {
     try {
         Chanel
         .find({})
-        .sort([["created", -1]])
+        .sort( {chanelCreated: -1} )
         .exec( (err, chanels) => {
             if(err || !chanels) return res.status(200).json( {message: "error occur (get chanels)"} )
             return res.status(200).json(chanels);
@@ -73,31 +74,49 @@ module.exports.postSaveChanelMessage = (req, res) => {
     
         form.parse(req, function(err, fields, files) {
             let { cid, uid, content } = fields;
+            let cm = new CM();
+            cm.sender = uid;
+            cm.chanelId = cid;
+            cm.content = content;
+
             console.log("***SEND***", { cid, uid, content })
-            Chanel
-            .findById(cid)
-            .exec( (err, chanel) => {
-                if(err || !chanel) {
-                    return res.status(200).json( {message: "error occur (save chanel message)"} );
-                }
-                if(files.photo) {
-                    cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
-                        if(error) return res.status(400).json( {message: "error occur (photo chanel)"} )
-                        chanel.chanelMessages.push({photo: result.secure_url, sender: uid, content});
-                        this.urlContainImage = result.secure_url;
-                    }).then( () => {
-                        chanel.save();
-                        return res.status(200).json( {urlContainImage: this.urlContainImage} );
-                    });
-                } else {
-                    chanel.chanelMessages.push({content, sender: uid});
-                    chanel.save();
-                    return res.json({});
-                }
-            });
+            if(files.photo) {
+                cloudinary.v2.uploader.upload(files.photo.path, function(error, result) {
+                    if(error) return res.status(400).json( {message: "error occur (photo cm)"} )
+                    cm.photo = result.secure_url;
+                    this.urlContainImage = result.secure_url;
+                }).then( () => {
+                    cm.save();
+                    return res.status(200).json( {urlContainImage: this.urlContainImage} );
+                });
+            } else {
+                cm.save();
+                return res.json({});
+            }
+
         });
     } catch(e) { console.log(e) } 
 
     
     
+}
+
+module.exports.getChanelMessage = (req, res) => {
+    let skip = Number(req.query.skip) || 0;
+    let limit = Number(req.query.limit) || 5;
+    let { cid } = req.params;
+    console.log({limit, skip, cid});
+    CM
+    .find({chanelId: cid})
+    .populate("sender", "_id fullname email photo")
+    .skip(skip)
+    .limit(limit)
+    .sort({created: -1})
+    .exec( (err, messages) => {
+        if(err) {
+            console.log(err)
+            return res.json( {message: "Limit!"} );
+        }
+        return res.json(messages.reverse());
+    });
 }

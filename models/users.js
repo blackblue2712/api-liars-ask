@@ -14,7 +14,10 @@ const userSchema = new Schema ({
         default: Date.now
     },
     modified: Date,
-    photo: String,
+    photo: {
+        type: String, 
+        default: "https://res.cloudinary.com/dged6fqkf/image/upload/v1581173169/jbwkupd6wxap1udmgfmz.png"
+    },
     registerIP: String,
     status: {
         type: Boolean,
