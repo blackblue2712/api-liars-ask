@@ -38,6 +38,7 @@ const reqUpgrade = require("./routes/request-upgrade");
 const notifyRoute = require("./routes/notify");
 const chanelRoute = require("./routes/chanels");
 const pmRoute = require("./routes/private-chat");
+const ytbRoute = require("./routes/youtube");
 
 // middleware
 app.use(cors());
@@ -59,6 +60,7 @@ app.use("/request", reqUpgrade);
 app.use("/notify", notifyRoute);
 app.use("/chanels", chanelRoute);
 app.use("/pm", pmRoute);
+app.use("/youtube", ytbRoute);
 
 
 app.use( function(error, req, res, next) {

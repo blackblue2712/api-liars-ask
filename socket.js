@@ -5,6 +5,8 @@
 let UserClass = require("./utilities/UserClass");
 let users = new UserClass();
 let connectedIndividualUsers = {};
+let BOT_ID = "5d90866f6a1756647a6da758";
+let BOT_SOCKET = [];
 
 module.exports = (server) => {
     let io = require('socket.io')(server);
@@ -28,6 +30,10 @@ function initializeSocket(io) {
             try {
                 let { chanelId, sid, uid, name, photo } = data;
 
+                if(uid === BOT_ID) {
+                    BOT_SOCKET[BOT_ID] = socket;
+                }
+
                 let listConnectedUids = users.GetUidConnectedChanelUser(chanelId);
                 let checkUser = listConnectedUids.indexOf(uid);
                 console.log("join", chanelId)
@@ -36,6 +42,10 @@ function initializeSocket(io) {
                     users.AddConnectedChanelUser(sid, uid, name, photo, chanelId);
                 }
                 io.to(chanelId).emit("list-connected-chanel-users", users.GetConnectedChanelUser(chanelId));
+                
+                if(BOT_SOCKET[BOT_ID]) {
+                    BOT_SOCKET[BOT_ID].emit("play-music", {chanelId})
+                }
 
                 cb();
             } catch (e) { console.log("!error join-chanel", e) }
@@ -61,6 +71,15 @@ function initializeSocket(io) {
                 io.to(chanelId).emit("server-send-message-contain-image-from-chanel", { status: 200, data });
                 cb();
             } catch (e) { console.log("!error client-send-message-from-chanel", e) }
+        });
+
+        socket.on("skip-music", chanelId => {
+            console.log("skip-music", chanelId);
+            io.to(chanelId).emit("skip-music");
+        })
+
+        socket.on("play-music", data => {
+            BOT_SOCKET[BOT_ID].to(data.chanelId).emit("bot-send-queue", data);
         });
 
 
